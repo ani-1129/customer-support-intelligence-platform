@@ -1,113 +1,288 @@
-# Customer Support Intelligence Platform 🤖
+# 🤖 Customer Support Intelligence Platform
 
-> RAG-driven Support Ticket Summarisation, Metadata Extraction, and Agent Next-Action Recommender.
+> **RAG-driven Ticket Summarisation, Intent Extraction, and Agent Recommendation System**
+
+---
+
+<div align="center">
+
+[![Live Demo](https://img.shields.io/badge/🚀%20Live%20Demo-Streamlit%20App-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://support-intelligence-platform.streamlit.app/)
+[![FastAPI Backend](https://img.shields.io/badge/⚡%20FastAPI%20Backend-Live%20on%20Render-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://customer-support-api-4xns.onrender.com)
+[![API Docs](https://img.shields.io/badge/📖%20API%20Docs-Swagger%20UI-blue?style=for-the-badge&logo=swagger&logoColor=white)](https://customer-support-api-4xns.onrender.com/docs)
+
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.24+-FF4B4B?style=flat-square&logo=streamlit)](https://streamlit.io)
+[![Qdrant](https://img.shields.io/badge/Qdrant-Vector%20DB-DC143C?style=flat-square)](https://qdrant.tech)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+
+</div>
+
+---
+
+## 🌐 Live Links
+
+| Service | URL |
+|---|---|
+| 🎯 **Agent Dashboard (Streamlit UI)** | [https://support-intelligence-platform.streamlit.app/](https://support-intelligence-platform.streamlit.app/) |
+| ⚡ **FastAPI Backend** | [https://customer-support-api-4xns.onrender.com](https://customer-support-api-4xns.onrender.com) |
+| 📖 **Interactive API Docs (Swagger)** | [https://customer-support-api-4xns.onrender.com/docs](https://customer-support-api-4xns.onrender.com/docs) |
+| 💚 **Health Check** | [https://customer-support-api-4xns.onrender.com/api/health](https://customer-support-api-4xns.onrender.com/api/health) |
+
+> ⚠️ **Note:** The backend is hosted on Render's free tier and may take **~30 seconds** to wake up after inactivity. The Streamlit app will show a loading spinner while the API boots up.
+
+---
+
+## 📌 What This Project Does
+
+Given a raw customer support interaction (chat transcript, email, or voice transcript), the platform:
+
+1. 🧹 **Cleans & Anonymises** the ticket — strips PII (emails, phones, SSNs, credit cards)
+2. 📝 **Summarises** the issue in 2–3 concise sentences an agent can read instantly
+3. 🏷️ **Extracts metadata** — intent, products mentioned, SLA priority, sentiment, and named entities
+4. 🔍 **Retrieves** 3–5 semantically similar past tickets from a vector database (RAG)
+5. ✅ **Recommends** next-actions, Knowledge Base articles, and a step-by-step agent runbook
+6. 🔄 **Learns** from human agent feedback (Likert ratings) to improve over time
+
+---
+
+## 🏗️ Architecture
+
+```
+Raw Transcript / Email
+        ↓
+┌─────────────────────┐
+│  Ingestion & Cleaning│  ← PII Masking, Speaker Splitting
+└─────────────────────┘
+        ↓
+┌─────────────────────┐
+│  Embedding Generator │  ← Mock / SentenceTransformers / OpenAI
+└─────────────────────┘
+        ↓
+┌─────────────────────┐     ┌────────────────────┐
+│   Qdrant Vector DB   │ ←→  │  RAG Query Engine  │
+└─────────────────────┘     └────────────────────┘
+                                      ↓
+                           ┌─────────────────────┐
+                           │  Cross-Encoder       │  ← TF-IDF / Transformer Reranker
+                           │  Reranker            │
+                           └─────────────────────┘
+                                      ↓
+                           ┌─────────────────────┐
+                           │  LLM Orchestrator    │  ← Mock / OpenAI
+                           │  • Summariser        │
+                           │  • Intent Extractor  │
+                           │  • Recommender       │
+                           └─────────────────────┘
+                                      ↓
+                           ┌─────────────────────┐
+                           │  Agent Dashboard     │  ← Streamlit UI
+                           │  + Feedback Loop     │
+                           └─────────────────────┘
+                                      ↓
+                              SQLite / PostgreSQL
+                              (Feedback & Logs)
+```
 
 ---
 
 ## 🚀 Quick Start (Local Development)
 
-### 1. Installation
-Clone the repository and set up a virtual environment:
+### 1. Clone the Repository
 ```bash
-# Navigate to the project root
-cd "D:\new project"
+git clone https://github.com/ani-1129/customer-support-intelligence-platform.git
+cd customer-support-intelligence-platform
+```
 
-# Create a virtual environment
-python -m venv venv
-venv\Scripts\activate
-
-# Install dependencies
+### 2. Install Dependencies
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment Variables
-Create a `.env` file in the project root or export variables:
+### 3. Configure Environment Variables (Optional)
+Create a `.env` file or export these variables:
 ```bash
-# Provide to disable Mock mode and use production models
-export OPENAI_API_KEY="your-openai-api-key"
+# Leave blank to run in offline Mock mode (no API key needed)
+OPENAI_API_KEY=your-openai-api-key
 
-# Database and MLflow configuration (optional)
-export QDRANT_HOST=":memory:"
-export DB_URL="sqlite:///D:/new project/platform.db"
-export MLFLOW_TRACKING_URI="sqlite:///D:/new project/mlflow.db"
+# Database & Vector DB (defaults work out of the box)
+QDRANT_HOST=:memory:
+DB_URL=sqlite:///./platform.db
+SECRET_KEY=your-secret-key-here
 ```
 
-### 3. Run FastAPI Backend
+### 4. Start the FastAPI Backend
 ```bash
 uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
-You can access the API Swagger docs at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+📖 API docs available at: http://127.0.0.1:8000/docs
 
-### 4. Run Streamlit UI Dashboard
-In a separate terminal (with virtual environment activated):
+### 5. Start the Streamlit Dashboard
+Open a second terminal:
 ```bash
 streamlit run ui/app.py --server.port 8501
 ```
-Open [http://localhost:8501](http://localhost:8501) in your browser.
+🌐 Dashboard opens at: http://localhost:8501
 
 ---
 
 ## 🐳 Docker Deployment
 
-To spin up the entire microservices stack (Qdrant Vector DB, FastAPI backend, and Streamlit agent portal) using Docker Compose:
+Spin up the full stack (Qdrant + FastAPI + Streamlit) with one command:
 ```bash
-cd "D:\new project\infra"
+cd infra
 docker-compose up --build
 ```
-- FastAPI Server: [http://localhost:8000](http://localhost:8000)
-- Streamlit Portal: [http://localhost:8501](http://localhost:8501)
-- Qdrant UI Dashboard: [http://localhost:6333/dashboard](http://localhost:6333/dashboard)
+
+| Service | URL |
+|---|---|
+| FastAPI | http://localhost:8000/docs |
+| Streamlit | http://localhost:8501 |
+| Qdrant Dashboard | http://localhost:6333/dashboard |
 
 ---
 
-## 📈 Running Evaluations & MLflow Tracking
+## 🔌 API Endpoints
 
-### 1. Run Pipeline Evaluations
-To run the automated ROUGE, nDCG, MRR and intent extraction accuracy tests, and output plotly charts:
+### Authentication
 ```bash
-python notebooks/evaluate.py
-```
-This writes reports and standalone HTML charts to the [notebooks/plots](file:///D:/new%20project/notebooks/plots) folder.
-
-### 2. Run MLflow Tracking Dashboard
-Start the local MLflow dashboard to review logged runs and prompt versions:
-```bash
-mlflow server --backend-store-uri sqlite:///D:/new_project/mlflow.db --port 5000
-```
-Open [http://localhost:5000](http://localhost:5000) to inspect parameters, metrics, and prompts.
-
----
-
-## 🔌 API Endpoints Usage Examples
-
-### 1. Obtain Auth Token
-```bash
-curl -X POST "http://localhost:8000/api/token" \
-     -H "Content-Type: application/x-www-form-urlencoded" \
+# Get JWT Token (Agent)
+curl -X POST "https://customer-support-api-4xns.onrender.com/api/token" \
      -d "username=agent_john&password=password123"
-```
-Returns a JWT `access_token` string.
 
-### 2. Ingest Ticket
-```bash
-curl -X POST "http://localhost:8000/api/ingest" \
-     -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \
-     -H "Content-Type: application/json" \
-     -d '{"text": "Customer: Reset my credential. Email bob@domain.com."}'
+# Get JWT Token (Admin)
+curl -X POST "https://customer-support-api-4xns.onrender.com/api/token" \
+     -d "username=admin_boss&password=password123"
 ```
 
-### 3. Query RAG Recommendations
+### Ingest a Ticket
 ```bash
-curl -X POST "http://localhost:8000/api/query" \
-     -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \
+curl -X POST "https://customer-support-api-4xns.onrender.com/api/ingest" \
+     -H "Authorization: Bearer <YOUR_TOKEN>" \
      -H "Content-Type: application/json" \
-     -d '{"text": "Customer: Reset my credential. Email bob@domain.com.", "top_k": 3}'
+     -d '{"text": "Customer: I was charged twice for my subscription. My email is bob@test.com."}'
 ```
 
-### 4. Submit Agent Feedback
+### Query the RAG Pipeline
 ```bash
-curl -X POST "http://localhost:8000/api/feedback" \
-     -H "Authorization: Bearer <YOUR_ACCESS_TOKEN>" \
+curl -X POST "https://customer-support-api-4xns.onrender.com/api/query" \
+     -H "Authorization: Bearer <YOUR_TOKEN>" \
      -H "Content-Type: application/json" \
-     -d '{"ticket_id": "<INGEST_DOC_ID>", "summary_rating": 5, "intent_rating": 4, "corrected_summary": "User is looking to reset credentials"}'
+     -d '{"text": "Customer: I cannot log in, the reset link gives a 404 error.", "top_k": 3}'
 ```
+
+### Submit Agent Feedback
+```bash
+curl -X POST "https://customer-support-api-4xns.onrender.com/api/feedback" \
+     -H "Authorization: Bearer <YOUR_TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"ticket_id": "<DOC_ID>", "summary_rating": 5, "intent_rating": 4, "recommendation_rating": 5}'
+```
+
+### Health Check
+```bash
+curl "https://customer-support-api-4xns.onrender.com/api/health"
+```
+
+---
+
+## 🎮 Demo Credentials
+
+| Role | Username | Password | Access |
+|---|---|---|---|
+| 🧑‍💼 Support Agent | `agent_john` | `password123` | Ingest, Query, Feedback |
+| 👑 Supervisor/Admin | `admin_boss` | `password123` | All + Metrics Dashboard |
+
+---
+
+## 📊 Evaluation Results
+
+| Metric | Baseline | With Reranker |
+|---|---|---|
+| **MRR (Retrieval)** | `0.800` | `1.000` ✅ |
+| **nDCG@3** | `0.584` | `0.890` ✅ |
+| **ROUGE-1 (Summary)** | — | `0.436` |
+| **Intent F1-Score** | — | `0.800` |
+
+---
+
+## 🗂️ Project Structure
+
+```
+customer-support-intelligence-platform/
+├── src/                    # Core pipeline modules
+│   ├── config.py           # Environment config
+│   ├── ingestion.py        # Cleaning, PII masking, speaker split
+│   ├── embeddings.py       # Mock / SentenceTransformers / OpenAI
+│   ├── vector_db.py        # Qdrant wrapper
+│   ├── retriever.py        # RAG retrieval
+│   ├── reranker.py         # TF-IDF & CrossEncoder reranker
+│   ├── llm.py              # Mock & OpenAI LLM handlers
+│   ├── summariser.py       # Summarisation prompts
+│   ├── extractor.py        # Intent/entity extraction
+│   ├── recommender.py      # Next-actions & KB articles
+│   ├── database.py         # SQLAlchemy schema
+│   └── mlflow_utils.py     # Experiment tracking
+├── api/                    # FastAPI backend
+│   ├── app.py              # Endpoints: /ingest /query /feedback /metrics
+│   └── auth.py             # OAuth2 JWT + RBAC + rate limiting
+├── ui/                     # Streamlit dashboard
+│   └── app.py              # Agent sandbox + supervisor analytics
+├── notebooks/              # Evaluation scripts
+│   └── evaluate.py         # ROUGE, nDCG, MRR, plots
+├── tests/                  # Pytest suite (11 tests)
+│   ├── test_pipeline.py
+│   └── test_api.py
+├── infra/                  # Docker assets
+│   ├── Dockerfile.api
+│   ├── Dockerfile.ui
+│   └── docker-compose.yml
+├── docs/
+│   └── report.md           # 5-page technical report
+├── render.yaml             # Render auto-deploy config
+├── Procfile                # Render start command
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 🛡️ Security Features
+
+- 🔐 **OAuth2 JWT Authentication** on all API endpoints
+- 🧑‍💼 **Role-Based Access Control** (Agent vs Admin)
+- 🚦 **Rate Limiting** — sliding window per user token
+- 🔒 **PII Redaction** — emails, phones, SSNs, credit cards masked before indexing
+- 🔑 **Secret Key** via environment variable (never hardcoded)
+
+---
+
+## 📈 MLflow Experiment Tracking
+
+```bash
+# Run locally to track prompt versions and metrics
+mlflow server --backend-store-uri sqlite:///mlflow.db --port 5000
+# Then open: http://localhost:5000
+```
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+<div align="center">
+
+**Built with ❤️ using FastAPI, Streamlit, Qdrant, and LangChain**
+
+[![Live Demo](https://img.shields.io/badge/🚀%20Try%20the%20Live%20Demo-Click%20Here-FF4B4B?style=for-the-badge)](https://support-intelligence-platform.streamlit.app/)
+
+</div>
