@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+
+# Virtual environments
+venv/
+env/
+.env
+.venv
+
+# Database files (ephemeral on Render)
+*.db
+*.sqlite3
+
+# MLflow artifacts
+mlruns/
+mlflow.db
+
+# Plots / generated output
+notebooks/plots/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets (DO NOT commit)
+.streamlit/secrets.toml
+.env.local
+.env.production

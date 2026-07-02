@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: customer-support-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: QDRANT_HOST
+        value: ":memory:"
+      - key: DB_URL
+        value: "sqlite:///./platform.db"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
